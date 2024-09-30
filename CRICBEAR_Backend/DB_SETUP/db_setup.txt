@@ -1,0 +1,166 @@
+CREATE DATABASE IF NOT EXISTS CRICBEAR;
+USE CRICBEAR;
+
+-- Create the User table if it does not exist
+CREATE TABLE IF NOT EXISTS User (
+    uid INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    last_name VARCHAR(50),
+    first_name VARCHAR(50),
+    email VARCHAR(100),
+    role ENUM('ADMIN', 'COACH')
+);
+
+
+CREATE TABLE IF NOT EXISTS tournament (
+    tid INT AUTO_INCREMENT PRIMARY KEY,
+    t_name VARCHAR(255) NOT NULL UNIQUE,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status ENUM('LIVE', 'UPCOMING', 'COMPLETED'),
+    uid INT,
+    FOREIGN KEY (uid) REFERENCES User(uid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS team (
+    teamid INT AUTO_INCREMENT PRIMARY KEY,
+    team_name VARCHAR(255) UNIQUE NOT NULL,
+    coachid INT NOT NULL,
+    matches_played BIGINT DEFAULT 0,
+    matches_won BIGINT DEFAULT 0,
+    matches_lost BIGINT DEFAULT 0,
+    matches_drawn BIGINT DEFAULT 0,
+    matches_abandoned BIGINT DEFAULT 0,
+    points INT DEFAULT 0,
+    nrr DOUBLE(5,2) DEFAULT 0.0,
+    FOREIGN KEY (coachid) REFERENCES User(uid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS reg_team (
+    rtid INT AUTO_INCREMENT PRIMARY KEY,
+    tid INT,
+    teamid INT,
+    group_number INT DEFAULT 0,
+    FOREIGN KEY (tid) REFERENCES tournament(tid) ON DELETE CASCADE,
+    FOREIGN KEY (teamid) REFERENCES team(teamid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS matches (
+    mid INT AUTO_INCREMENT PRIMARY KEY,
+    teamid_1 INT,
+    teamid_2 INT,
+    match_date DATE NOT NULL,
+    status ENUM('LIVE', 'UPCOMING', 'COMPLETED'),
+    stadium VARCHAR(100),
+    tid INT,
+    match_type ENUM('NORMAL', 'SEMIFINAL', 'FINAL'),
+    FOREIGN KEY (teamid_1) REFERENCES team(teamid) ON DELETE CASCADE,
+    FOREIGN KEY (teamid_2) REFERENCES team(teamid) ON DELETE CASCADE,
+    FOREIGN KEY (tid) REFERENCES tournament(tid) ON DELETE SET NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS innings (
+    iid INT AUTO_INCREMENT PRIMARY KEY,
+    mid INT,
+    batting_id INT,
+    bowling_id INT,
+    runs BIGINT DEFAULT 0,
+    wickets INT DEFAULT 0,
+    overs DOUBLE DEFAULT 0.0,
+    FOREIGN KEY (mid) REFERENCES matches(mid) ON DELETE CASCADE,
+    FOREIGN KEY (batting_id) REFERENCES team(teamid) ON DELETE CASCADE,
+    FOREIGN KEY (bowling_id) REFERENCES team(teamid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS ballbyball (
+    bid INT AUTO_INCREMENT PRIMARY KEY,
+    iid INT,
+    over_number INT DEFAULT 0,
+    ball_number INT DEFAULT 0,
+    batsmen1 VARCHAR(255),
+    batsmen2 VARCHAR(255),
+    bowler VARCHAR(255),
+    runs_scored INT DEFAULT 0,
+    extra ENUM('WIDE', 'NOBALL') DEFAULT NULL,
+    wicket ENUM('CAUGHT', 'BOWLED', 'RUNOUT', 'LBW') DEFAULT NULL,
+    total INT DEFAULT 0,
+    wicket_number INT DEFAULT 0,
+    FOREIGN KEY (iid) REFERENCES innings(iid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS match_result (
+    mrid INT AUTO_INCREMENT PRIMARY KEY,
+    mid INT,
+    toss_decision ENUM('BAT', 'BOWL'),
+    toss_win_team INT,
+    winner_id INT,
+    FOREIGN KEY (mid) REFERENCES matches(mid) ON DELETE CASCADE,
+    FOREIGN KEY (winner_id) REFERENCES team(teamid) ON DELETE SET NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS notifications (
+    nid INT AUTO_INCREMENT PRIMARY KEY,
+    uid INT,
+    reminder_type VARCHAR(50),
+    message TEXT,
+    sent_at DATETIME,
+    FOREIGN KEY (uid) REFERENCES User(uid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS player_profile (
+    pid INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    overseas BOOLEAN DEFAULT FALSE,
+    flag BOOLEAN DEFAULT FALSE,
+    player_roles ENUM('BATSMAN', 'BOWLER', 'WICKETKEEPER', 'ALLROUNDER')
+);
+
+
+CREATE TABLE IF NOT EXISTS team_player (
+    tpid INT AUTO_INCREMENT PRIMARY KEY,
+    pid INT,
+    teamid INT,
+    overseas BOOLEAN,
+    player_roles ENUM('BATSMAN', 'ALLROUNDER', 'WICKETKEEPER', 'BOWLER'),
+    runs_scored INT DEFAULT 0,
+    balls INT DEFAULT 0,
+    wickets INT DEFAULT 0,
+    overs DOUBLE DEFAULT 0.0,
+    runs_given INT DEFAULT 0,
+    flag BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (pid) REFERENCES player_profile(pid) ON DELETE CASCADE,
+    FOREIGN KEY (teamid) REFERENCES team(teamid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS batting_score (
+    bsid INT AUTO_INCREMENT PRIMARY KEY,
+    player_name VARCHAR(255) NOT NULL,
+    runs_scored BIGINT DEFAULT 0,
+    balls_faced INT DEFAULT 0,
+    fours INT DEFAULT 0,
+    six INT DEFAULT 0,
+    is_out BOOLEAN DEFAULT FALSE,
+    iid INT,
+    FOREIGN KEY (iid) REFERENCES innings(iid) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS bowling_score (
+    bsid INT AUTO_INCREMENT PRIMARY KEY,
+    player_name VARCHAR(255) NOT NULL,
+    runs_given BIGINT DEFAULT 0,
+    overs INT DEFAULT 0,
+    wickets INT DEFAULT 0,
+    iid INT,
+    FOREIGN KEY (iid) REFERENCES innings(iid) ON DELETE CASCADE
+);

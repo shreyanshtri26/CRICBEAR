@@ -11,6 +11,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
+    "cricbear": "file:",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.1",
@@ -52,15 +53,15 @@
     "@babel/preset-react": "^7.24.7",
     "babel-jest": "^29.7.0",
     "jest": "^27.5.1",
-    "react-test-renderer": "^18.3.1",
-    "jest-environment-jsdom": "^29.7.0" 
-  }, 
+    "jest-environment-jsdom": "^29.7.0",
+    "react-test-renderer": "^18.3.1"
+  },
   "jest": {
     "transformIgnorePatterns": [
-      "/node_modules/(?!axios)/" 
+      "/node_modules/(?!axios)/"
     ],
     "transform": {
-      "^.+\\.js$": "babel-jest"  
+      "^.+\\.js$": "babel-jest"
     }
   },
   "author": "",

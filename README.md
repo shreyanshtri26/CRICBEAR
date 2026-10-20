@@ -1,115 +1,130 @@
 # CRICBEAR 🏏
 
-Open-source cricket tournament management: admins create tournaments and generate schedules, coaches register teams and players, and the public follows live matches, scores and standings.
+Open-source cricket tournament management. Admins create tournaments and generate schedules, coaches register teams and players, and the public follows matches, scores and standings.
 
-- **Public dashboard:** https://cricbear.vercel.app
-- **Admin / coach dashboard:** https://cricbear-admin.vercel.app
-- **License:** [Apache-2.0](LICENSE)
+License: [Apache-2.0](LICENSE) · Frontend docs: [CRICBEAR_Frontend](CRICBEAR_Frontend/README.md) · Backend docs: [CRICBEAR_Backend](CRICBEAR_Backend/README.md) · Agent guide: [SKILL.md](SKILL.md)
 
-## Architecture
+## Complete architecture
 
+```mermaid
+flowchart LR
+  subgraph Clients
+    PUB["Public dashboard<br/>React 18 + MUI · :3001"]
+    ADM["Admin / Coach dashboard<br/>React 18 + MUI · :3000"]
+  end
+  subgraph Backend["Spring Boot 3.3 services (Java 22)"]
+    AUTH["userAuthorisation :8083<br/>register · login · roles"]
+    TOUR["tournament :8084<br/>tournaments · teams · players<br/>matches · scoring · standings"]
+    NOTIF["notificationService :8081<br/>scheduled reminders (optional)"]
+    GW["gateway :8080 (optional)"]
+    EUR["eureka :8761 (optional)"]
+  end
+  DB[("Postgres (Neon)")]
+  PUB -->|REST/JSON| TOUR
+  ADM -->|REST/JSON| AUTH
+  ADM -->|REST/JSON| TOUR
+  AUTH --> DB
+  TOUR --> DB
+  NOTIF --> DB
+  GW -.routes.-> AUTH
+  GW -.registers.-> EUR
+  NOTIF -.registers.-> EUR
 ```
-                 ┌──────────────────────────┐   ┌──────────────────────────┐
-   Browser ────► │ Public dashboard (React) │   │ Admin/Coach dash (React) │
-                 │ Vercel · :3001 locally   │   │ Vercel · :3000 locally   │
-                 └────────────┬─────────────┘   └───────┬──────────┬───────┘
-                              │ REST/JSON (axios)       │          │
-                              ▼                         ▼          ▼
-                 ┌──────────────────────────┐   ┌──────────────────────────┐
-                 │ tournament service       │   │ userAuthorisation service│
-                 │ Spring Boot · :8084      │   │ Spring Boot · :8083      │
-                 │ teams, players, matches, │   │ register, login, roles   │
-                 │ scoring, standings       │   │ (bcrypt passwords)       │
-                 └────────────┬─────────────┘   └────────────┬─────────────┘
-                              └───────────────┬──────────────┘
-                                              ▼
-                                 ┌──────────────────────────┐
-                                 │ Neon serverless Postgres │
-                                 │ (JPA / Hibernate)        │
-                                 └──────────────────────────┘
-```
 
-| Part | Tech | Path | Port |
+| Component | Tech | Path | Port |
 |---|---|---|---|
 | Public dashboard | React 18, MUI, axios | `CRICBEAR_Frontend/dashboardforpublicuser` | 3001 |
 | Admin/Coach dashboard | React 18, MUI, axios | `CRICBEAR_Frontend/dashboardforadmincoach` | 3000 |
-| Auth service | Spring Boot 3.3, Spring Security, JPA | `CRICBEAR_Backend/userAuthorisation` | 8083 |
-| Tournament service | Spring Boot 3.3, JPA | `CRICBEAR_Backend/tournament` | 8084 |
-| Notification service | Spring Boot, JPA | `CRICBEAR_Backend/notificationService` | 8081 (optional, not deployed) |
-| Eureka / Gateway | Spring Cloud | `CRICBEAR_Backend/eureka`, `gateway` | 8761 / 8080 (optional, not used by the frontends) |
-| Database | Neon Postgres | schema: `CRICBEAR_Backend/DB_SETUP/schema.sql` | – |
+| Auth service | Spring Boot, Spring Security, JPA | `CRICBEAR_Backend/userAuthorisation` | 8083 |
+| Tournament service | Spring Boot, JPA | `CRICBEAR_Backend/tournament` | 8084 |
+| Notification service | Spring Boot, JPA (optional) | `CRICBEAR_Backend/notificationService` | 8081 |
+| Gateway / Eureka | Spring Cloud (optional) | `CRICBEAR_Backend/gateway`, `eureka` | 8080 / 8761 |
+| Database | Postgres | `CRICBEAR_Backend/DB_SETUP/schema.sql` | 5432 |
 
-The frontends call the auth and tournament services directly. Eureka and the gateway are only needed if you want service discovery locally.
+**Request flow.** The dashboards call the auth and tournament services directly over REST; there is no server-side session. Login returns the user (and role), which the admin/coach dashboard keeps client-side to show role-specific screens. Eureka and the gateway are optional local conveniences and are not used by the dashboards.
 
-### Data model
+**Layering (each service).** `controller` (REST, CORS) → `service` (business rules: scheduling, standings, role checks) → `repository` (Spring Data JPA) → `model` (JPA entities). Enums are stored as strings.
 
-`users` → `tournament` → `reg_team` ← `team` ← `team_player` → `player_profile`;
-`matches` (per tournament, NORMAL / SEMIFINAL / FINAL) → `innings` → `ballbyball`, `batting_score`, `bowling_score`; `match_result`; `notifications`.
-Enum columns (roles, status, match type, …) are stored as `VARCHAR` and mapped with `@Enumerated(EnumType.STRING)`.
+**Match lifecycle.** `UPCOMING` → admin starts the tournament (`POST /tournament/start`) → teams are split into groups and `/match/schedule/{tid}/{uid}` creates `NORMAL` matches → `/match/start/{mid}` sets `LIVE`, creates innings and ball-by-ball/batting/bowling scores → on completion a `match_result` is written and team points/NRR update → `/match/semi/{tid}/{uid}` and `/match/final/{tid}/{uid}` create `SEMIFINAL`/`FINAL` matches from the points table → tournament `COMPLETED`.
 
-### Roles
+## Data model
+
+```mermaid
+erDiagram
+  USERS ||--o{ TOURNAMENT : creates
+  USERS ||--o{ TEAM : "coaches"
+  USERS ||--o{ NOTIFICATIONS : receives
+  TOURNAMENT ||--o{ REG_TEAM : has
+  TEAM ||--o{ REG_TEAM : "registers in"
+  TOURNAMENT ||--o{ MATCHES : schedules
+  TEAM ||--o{ MATCHES : "plays (teamid_1, teamid_2)"
+  MATCHES ||--o{ INNINGS : has
+  MATCHES ||--o| MATCH_RESULT : "decided by"
+  TEAM ||--o{ MATCH_RESULT : wins
+  INNINGS ||--o{ BALLBYBALL : records
+  INNINGS ||--o{ BATTING_SCORE : has
+  INNINGS ||--o{ BOWLING_SCORE : has
+  TEAM ||--o{ TEAM_PLAYER : fields
+  PLAYER_PROFILE ||--o{ TEAM_PLAYER : "appears as"
+
+  USERS { int uid PK "username unique, password bcrypt, first_name, last_name, email, role ADMIN|COACH" }
+  TOURNAMENT { int tid PK "t_name unique, start_date, end_date, status, uid FK" }
+  TEAM { int teamid PK "team_name unique, coachid FK, matches_played/won/lost/drawn/abandoned, points, nrr" }
+  REG_TEAM { int rtid PK "tid FK, teamid FK, group_number" }
+  MATCHES { int mid PK "teamid_1 FK, teamid_2 FK, match_date, status, stadium, tid FK, match_type" }
+  INNINGS { int iid PK "mid FK, batting_id FK, bowling_id FK, runs, wickets, overs" }
+  BALLBYBALL { int bid PK "iid FK, over_number, ball_number, batsmen1, batsmen2, bowler, runs_scored, extra, wicket, total, wicket_number" }
+  BATTING_SCORE { int bsid PK "iid FK, player_name, runs_scored, balls_faced, fours, six, is_out" }
+  BOWLING_SCORE { int bsid PK "iid FK, player_name, runs_given, overs, wickets" }
+  MATCH_RESULT { int mrid PK "mid FK, toss_desicion, toss_win_team, winner_id FK" }
+  PLAYER_PROFILE { int pid PK "name, overseas, flag, player_roles" }
+  TEAM_PLAYER { int tpid PK "pid FK, teamid FK, overseas, player_roles, runs_scored, balls, wickets, overs, runs_given, flag" }
+  NOTIFICATIONS { int nid PK "uid FK, reminder_type, message, sent_at" }
+```
+
+Enumerations (stored as `VARCHAR`):
+
+| Field | Values |
+|---|---|
+| `users.role` | `ADMIN`, `COACH` |
+| `tournament.status`, `matches.status` | `LIVE`, `UPCOMING`, `COMPLETED` |
+| `matches.match_type` | `NORMAL`, `SEMIFINAL`, `FINAL` |
+| `ballbyball.extra` | `WIDE`, `NOBALL` |
+| `ballbyball.wicket` | `CAUGHT`, `BOWLED`, `RUNOUT`, `LBW` |
+| `match_result.toss_desicion` | `BAT`, `BOWL` |
+| `*.player_roles` | `BATSMAN`, `BOWLER`, `WICKETKEEPER`, `ALLROUNDER` |
+
+Delete rules: removing a user cascades to their tournaments, teams and notifications; removing a tournament sets `matches.tid` to null; removing a team cascades to its registrations, matches, innings and players. The column name `toss_desicion` (sic) matches the `MatchResult` entity.
+
+## Roles
 
 - **Admin:** create tournaments, manage users and roles, start a tournament (generates the schedule), start matches, run semi-finals and final.
-- **Coach:** register, create/edit a team and players, register for a tournament.
+- **Coach:** register, create/edit a team and players, register the team for a tournament.
 - **Public:** read-only view of tournaments, teams, players, matches and standings.
 
 ## Run locally
 
-Prerequisites: JDK 22+, Maven, Node 18+, and a Postgres database (a free [Neon](https://neon.com) project works well).
+Prerequisites: JDK 22+, Maven, Node 18+, a Postgres database (a free [Neon](https://neon.com) project works).
 
 ```bash
-# 1. Database: create a Neon project, then apply the schema
-psql "$NEON_CONNECTION_STRING" -f CRICBEAR_Backend/DB_SETUP/schema.sql
+psql "$POSTGRES_URL" -f CRICBEAR_Backend/DB_SETUP/schema.sql
 
-# 2. Backends (JDBC URL, not the postgresql:// URL)
 export DATABASE_URL='jdbc:postgresql://<host>/<db>?sslmode=require'
-export DATABASE_USER='<user>'
-export DATABASE_PASSWORD='<password>'
+export DATABASE_USER='<user>' DATABASE_PASSWORD='<password>'
 (cd CRICBEAR_Backend/userAuthorisation && mvn spring-boot:run)   # :8083
 (cd CRICBEAR_Backend/tournament        && mvn spring-boot:run)   # :8084
 
-# 3. Frontends (separate terminals)
 (cd CRICBEAR_Frontend/dashboardforadmincoach && npm install && PORT=3000 npm start)
 (cd CRICBEAR_Frontend/dashboardforpublicuser && npm install && PORT=3001 npm start)
 ```
 
-Tests: `npm test` in each dashboard, `mvn test` in each service.
-
-### Configuration
-
-| Variable | Used by | Purpose |
-|---|---|---|
-| `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD` | backends | Postgres JDBC connection |
-| `PORT` | backends | HTTP port (defaults 8083 / 8084) |
-| `CORS_ORIGINS` | backends | Comma-separated allowed browser origins (default: localhost 3000/3001) |
-| `REACT_APP_AUTH_URL` | frontends (build time) | Base URL of the auth service, replaces `http://localhost:8083` |
-| `REACT_APP_TOURNAMENT_URL` | frontends (build time) | Base URL of the tournament service, replaces `http://localhost:8084` |
-
-## Deploy for free
-
-| Layer | Host | Notes |
-|---|---|---|
-| Database | Neon (free plan) | scales to zero, `aws-us-east-2` |
-| Backends | Render free web services (Docker) | `render.yaml` blueprint; sleep after ~15 min idle, so the first request is slow |
-| Frontends | Vercel Hobby | two projects, one per dashboard |
-
-1. **Database:** create a Neon project and run `schema.sql` (see above).
-2. **Backends:** in Render choose *New → Blueprint*, select this repo, and fill in `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD`. This creates `cricbear-auth` and `cricbear-tournament`.
-3. **Frontends:** from each dashboard directory run
-   ```bash
-   vercel link --project <cricbear | cricbear-admin>
-   vercel env add REACT_APP_AUTH_URL production        # https://cricbear-auth.onrender.com
-   vercel env add REACT_APP_TOURNAMENT_URL production  # https://cricbear-tournament.onrender.com
-   vercel --prod
-   ```
-4. Make sure `CORS_ORIGINS` on the backends lists both Vercel URLs.
+Details and configuration variables are in the [backend](CRICBEAR_Backend/README.md) and [frontend](CRICBEAR_Frontend/README.md) READMEs.
 
 ## Known limitations
 
-- Registration is open and the first admin must be promoted directly in the database (`update users set role='ADMIN' where username='…'`).
-- `SecurityConfig` permits all requests; authorization is enforced by the dashboards only. Harden before storing real data.
-- `notificationService`, `eureka` and `gateway` are not part of the free deployment.
+- Registration is open; promote the first admin in the database: `update users set role='ADMIN' where username='…';`
+- `SecurityConfig` permits all requests, so authorization is enforced by the dashboards only. Harden before storing real data.
 
 ## Contributing
 
-Issues and pull requests are welcome. Fork, create a branch, keep changes focused, and make sure `npm test` / `mvn test` pass. By contributing you agree your work is released under Apache-2.0.
+Issues and pull requests are welcome. Fork, branch, keep changes focused, and make sure `npm test` / `mvn test` pass. Contributions are released under Apache-2.0.

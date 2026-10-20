@@ -1,5 +1,6 @@
 package com.example.userAuthorisation.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class User {
     @Column(name = "username", unique = true)
     private String username;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // accepted on register, never returned
     @Column(name = "password")
     private String password;
 

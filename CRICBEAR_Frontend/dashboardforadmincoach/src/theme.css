@@ -1,0 +1,82 @@
+/* CRICBEAR brand layer: loaded after styles.css so it wins on equal specificity. */
+:root {
+  --ink: #14171e; --ink-2: #1e232d; --ink-3: #2c3340;
+  --orange: #ff6f00; --orange-deep: #e65100; --orange-soft: #fff1e4;
+  --paper: #f3f4f6; --line: #e3e5ea; --text: #1b1e25; --muted: #667085; --danger: #d92d20; --win: #138a57;
+  --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; }
+body { font-family: var(--body); background: var(--paper); color: var(--text); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--display); letter-spacing: 0.01em; line-height: 1.15; }
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+/* ---- sign in ---- */
+.login-container { width: min(400px, calc(100% - 32px)); margin: 8vh auto; padding: 28px 28px 24px; background: #fff; border: 1px solid var(--line); border-top: 4px solid var(--orange); border-radius: 12px; box-shadow: 0 8px 30px rgba(20, 23, 30, 0.08); text-align: left; }
+.login-container::before { content: ''; display: block; height: 34px; margin-bottom: 14px; background: url(./mark.png) left center / contain no-repeat; }
+.login-container h2 { font-size: 32px; margin: 0 0 18px; color: var(--text); }
+.form-group { margin-bottom: 14px; }
+.form-group label, .input-field label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+.login-container input, .login-container select, .form-group input, .input-field input, .input-field select, .search-input, .team-name-input, .tournament-selector select, .team-dropdown, .match-edit-form input, .match-edit-form select, .role-selection select {
+  width: 100%; padding: 10px 12px; border: 1px solid #cfd3da; border-radius: 8px; font: inherit; background: #fff; color: var(--text);
+}
+.login-container input:focus, .form-group input:focus, .input-field input:focus, .search-input:focus, .team-name-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-soft); outline: none; }
+.login-container button, .login-button { width: 100%; margin: 6px 0 10px; padding: 11px 14px; border: 0; border-radius: 8px; background: var(--orange); color: #fff; font: 700 16px var(--body); cursor: pointer; }
+.login-container button:hover, .login-button:hover { background: var(--orange-deep); }
+.toggle-link { color: var(--orange-deep); font-weight: 600; cursor: pointer; text-align: center; margin: 4px 0 0; }
+
+/* ---- app shell ---- */
+.dashboard-container { min-height: 100vh; height: auto; background: var(--paper); }
+.sidebar { width: 248px; flex: none; background: var(--ink); padding: 20px 14px; color: #fff; border-right: 3px solid var(--orange); }
+.sidebar::before { content: 'CRICBEAR'; display: block; padding: 4px 8px 18px 46px; margin-bottom: 8px; background: url(./mark.png) 6px 2px / 34px auto no-repeat; font: 700 24px/1.4 var(--display); letter-spacing: 0.06em; border-bottom: 1px solid var(--ink-3); }
+.sidebar ul { margin: 0; padding: 0; list-style: none; }
+.sidebar ul li { margin: 0 0 4px; }
+.sidebar ul li a { display: block; padding: 10px 12px; border-radius: 8px; color: #c9ced8; font-weight: 600; }
+.sidebar ul li a:hover { background: var(--ink-2); color: #fff; }
+.dashboard-content { flex: 1; min-width: 0; padding: 28px 32px; max-width: 1100px; }
+.dashboard-content h2 { font-size: 34px; margin: 0 0 6px; }
+.header { background: var(--ink); color: #fff; padding: 12px 20px; border-bottom: 3px solid var(--orange); display: flex; align-items: center; justify-content: space-between; }
+.logout-button { float: right; margin-left: 12px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text); font-weight: 600; cursor: pointer; }
+.logout-button:hover { border-color: var(--orange); color: var(--orange-deep); background: #fff; }
+
+/* ---- cards and lists ---- */
+.tournament-item, .user-item, .match-item, .player-item, .team-management-form, .form-container, .popup-content, .registration-modal, .manage-user-modal {
+  background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: none;
+}
+.tournament-item, .user-item, .match-item { padding: 14px 16px; margin-bottom: 12px; }
+.tournament-item:hover, .player-item:hover { box-shadow: 0 4px 14px rgba(20, 23, 30, 0.07); transform: none; }
+.tournament-item h3 { font-size: 24px; margin: 0 0 4px; }
+.tournament-item p { color: var(--muted); margin: 2px 0; }
+.users-list, .tournaments-list, .tournament-list, .matches-list { display: grid; gap: 12px; }
+
+/* ---- buttons: orange = primary, outline = secondary, red = destructive ---- */
+.manage-button, .create-button, .add-button, .save-button, .start-button, .submit-button, .register-button, .register-tournament-button, .team-save-button, .edit-button, .tournament-item button {
+  padding: 9px 16px; border: 0; border-radius: 8px; background: var(--orange); color: #fff; font: 700 15px var(--body); cursor: pointer;
+}
+.manage-button:hover, .create-button:hover, .save-button:hover, .start-button:hover, .submit-button:hover, .register-button:hover, .team-save-button:hover, .edit-button:hover, .tournament-item button:hover { background: var(--orange-deep); }
+.delete-button, .remove-player-button, .tournament-item button:last-child:not(:only-child) { background: var(--danger); color: #fff; }
+.delete-button:hover, .remove-player-button:hover { background: #b42318; }
+
+/* ---- dialogs ---- */
+.popup-overlay { background: rgba(20, 23, 30, 0.55); }
+.popup-content, .registration-modal, .manage-user-modal { padding: 22px; border-radius: 12px; max-width: min(520px, calc(100vw - 32px)); }
+
+/* ---- phones ---- */
+@media (max-width: 760px) {
+  .dashboard-container { flex-direction: column; }
+  .sidebar { width: 100%; padding: 10px 12px; border-right: 0; border-bottom: 3px solid var(--orange); }
+  .sidebar::before { padding-bottom: 10px; }
+  .sidebar ul { display: flex; gap: 6px; overflow-x: auto; }
+  .sidebar ul li { margin: 0; flex: none; }
+  .dashboard-content { padding: 18px 16px 40px; }
+  .dashboard-content h2 { font-size: 28px; }
+  .tournament-item .button-container, .schedule-buttons, .popup-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+}
+
+/* ---- dashboard home ---- */
+.lead { color: var(--muted); margin: 0 0 20px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.tile { display: block; padding: 18px 20px; background: #fff; border: 1px solid var(--line); border-radius: 12px; color: inherit; text-decoration: none; }
+.tile:hover { border-color: var(--orange); box-shadow: 0 0 0 3px var(--orange-soft); }
+.tile h3 { font-size: 26px; margin: 0 0 4px; }
+.tile p { margin: 0; color: var(--muted); }

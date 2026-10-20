@@ -1,0 +1,29 @@
+{
+  "services": {
+    "web": {
+      "root": "CRICBEAR_Frontend",
+      "installCommand": "npm --prefix dashboardforpublicuser ci && npm --prefix dashboardforadmincoach ci",
+      "buildCommand": "bash build.sh",
+      "outputDirectory": "dist",
+      "rewrites": [
+        { "source": "/admin/(.*)", "destination": "/admin/index.html" },
+        { "source": "/(.*)", "destination": "/index.html" }
+      ]
+    },
+    "auth": {
+      "root": "CRICBEAR_Backend/userAuthorisation",
+      "runtime": "container",
+      "rewrites": [{ "source": "/api/auth/:path(.*)?", "destination": "/:path" }]
+    },
+    "tournament": {
+      "root": "CRICBEAR_Backend/tournament",
+      "runtime": "container",
+      "rewrites": [{ "source": "/api/tournament/:path(.*)?", "destination": "/:path" }]
+    }
+  },
+  "rewrites": [
+    { "source": "/api/auth/(.*)", "destination": { "service": "auth" } },
+    { "source": "/api/tournament/(.*)", "destination": { "service": "tournament" } },
+    { "source": "/(.*)", "destination": { "service": "web" } }
+  ]
+}

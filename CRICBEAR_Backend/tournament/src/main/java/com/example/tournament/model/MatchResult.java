@@ -28,7 +28,7 @@ public class MatchResult {
     private int tossWinTeam;
 
     @Column(name = "winner_id")
-    private int winnerId;
+    private Integer winnerId; // null when the match is tied
 
     public MatchResult(int mid, TossDecision tossDecision, int tossWinTeam, int teamId) {
         this.mid = mid;

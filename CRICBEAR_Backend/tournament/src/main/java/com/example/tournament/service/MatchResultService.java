@@ -2,6 +2,7 @@ package com.example.tournament.service;
 
 import com.example.tournament.model.DTO.MatchResultDTO;
 import com.example.tournament.model.Innings;
+import com.example.tournament.model.Match;
 import com.example.tournament.model.MatchResult;
 import com.example.tournament.repository.InningsRepository;
 import com.example.tournament.repository.MatchRepository;
@@ -10,7 +11,7 @@ import com.example.tournament.repository.TeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class MatchResultService {
@@ -69,7 +70,7 @@ public class MatchResultService {
         return new MatchResultDTO(matchId,
                 matchResult.getTossDesicion(),
                 teamRepository.findByTeamId(matchResult.getTossWinTeam()).getTeamName(),
-                teamRepository.findByTeamId(matchResult.getWinnerId()).getTeamName(),
+                matchResult.getWinnerId() == null ? null : teamRepository.findByTeamId(matchResult.getWinnerId()).getTeamName(),
                 teamRepository.findByTeamId(matchRepository.getByMid(matchId).getTeamId1()).getTeamName(),
                 teamRepository.findByTeamId(matchRepository.getByMid(matchId).getTeamId2()).getTeamName(),
                 teamRepository.findByTeamId(firstInning.getBattingId()).getTeamName(),
@@ -77,4 +78,27 @@ public class MatchResultService {
                 firstInning.getRuns(), firstInning.getWickets(), secondInning.getRuns(), secondInning.getWickets());
     }
 
+
+    //Results of every finished match in four queries (the per-match lookup above costs about twenty).
+    public List<MatchResultDTO> getAllResults() {
+        Map<Integer, String> names = new HashMap<>();
+        teamRepository.findAll().forEach(t -> names.put(t.getTeamId(), t.getTeamName()));
+        Map<Integer, Match> matches = new HashMap<>();
+        matchRepository.findAll().forEach(m -> matches.put(m.getMid(), m));
+        Map<Integer, List<Innings>> innings = new HashMap<>();
+        inningsRepository.findAll().stream().sorted(Comparator.comparing(Innings::getIid))
+                .forEach(i -> innings.computeIfAbsent(i.getMid(), k -> new ArrayList<>()).add(i));
+        List<MatchResultDTO> out = new ArrayList<>();
+        for (MatchResult r : matchResultRepository.findAll()) {
+            List<Innings> two = innings.getOrDefault(r.getMid(), List.of());
+            Match m = matches.get(r.getMid());
+            if (two.size() != 2 || m == null) continue;
+            out.add(new MatchResultDTO(r.getMid(), r.getTossDesicion(), names.get(r.getTossWinTeam()),
+                    r.getWinnerId() == null ? null : names.get(r.getWinnerId()),
+                    names.get(m.getTeamId1()), names.get(m.getTeamId2()),
+                    names.get(two.get(0).getBattingId()), names.get(two.get(1).getBattingId()),
+                    two.get(0).getRuns(), two.get(0).getWickets(), two.get(1).getRuns(), two.get(1).getWickets()));
+        }
+        return out;
+    }
 }

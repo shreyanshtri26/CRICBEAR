@@ -12,6 +12,12 @@ public class MatchResultController {
     @Autowired
     private MatchResultService matchResultService;
 
+    //Results of all finished matches.
+    @GetMapping("/all")
+    public ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(matchResultService.getAllResults());
+    }
+
     //Get the match results by the id.
     @GetMapping("/getResultById/{mid}")
     public ResponseEntity<?> getByMatchId(@PathVariable Integer mid) {

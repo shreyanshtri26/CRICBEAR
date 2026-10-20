@@ -15,7 +15,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MatchService {
@@ -60,15 +62,23 @@ public class MatchService {
         matchRepository.delete(match);
     }
 
+    //One query for all team names instead of two per match.
+    private Map<Integer, String> teamNames() {
+        Map<Integer, String> names = new HashMap<>();
+        teamRepository.findAll().forEach(t -> names.put(t.getTeamId(), t.getTeamName()));
+        return names;
+    }
+
     //Find matches in a tournament and return in the DTO format with names of the teams.
     public List<MatchDTO> findAllByTid(Integer tid) {
         List<Match> matches = matchRepository.findAllByTid(tid);
         List<MatchDTO> matchDTOs = new ArrayList<>();
+        Map<Integer, String> names = teamNames();
         for (Match match : matches) {
             matchDTOs.add(new MatchDTO(match.getMid(),
                     match.getTid(),
-                    teamRepository.findByTeamId(match.getTeamId1()).getTeamName(),
-                    teamRepository.findByTeamId(match.getTeamId2()).getTeamName(),
+                    names.get(match.getTeamId1()),
+                    names.get(match.getTeamId2()),
                     match.getMatchDate(),
                     match.getStadium(),
                     match.getStatus(),
@@ -217,9 +227,10 @@ public class MatchService {
     public List<MatchDTO> getMatchesByStatus(MatchStatus status) {
         List<Match> matches = matchRepository.getByStatus(status);
         List<MatchDTO> matchDTOs = new ArrayList<>();
+        Map<Integer, String> names = teamNames();
         for (Match match : matches) {
-            String teamName1 = teamRepository.findByTeamId(match.getTeamId1()).getTeamName();
-            String teamName2 = teamRepository.findByTeamId(match.getTeamId2()).getTeamName();
+            String teamName1 = names.get(match.getTeamId1());
+            String teamName2 = names.get(match.getTeamId2());
 
             MatchDTO matchDTO = new MatchDTO(
                     match.getMid(),

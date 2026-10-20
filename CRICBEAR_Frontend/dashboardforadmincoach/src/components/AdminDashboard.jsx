@@ -7,6 +7,7 @@ function AdminDashboard() {
 
     // Handle user logout
     const handleLogout = () => {
+        localStorage.removeItem('user');
         navigate('/login');
     };
 
@@ -24,7 +25,12 @@ function AdminDashboard() {
                 {/* Logout button and welcome message */}
                 <button onClick={handleLogout} className="logout-button">Logout</button>
                 <h2>Welcome, Admin</h2>
-                <p>Select an option from the sidebar.</p>
+                <p className="lead">Choose what you want to manage.</p>
+                <div className="cards">
+                    <Link className="tile" to="./TournamentManagement"><h3>Tournaments</h3><p>Create tournaments, start them and generate the schedule.</p></Link>
+                    <Link className="tile" to="./ManageMatch"><h3>Matches</h3><p>Start today's matches and run the semi-finals and final.</p></Link>
+                    <Link className="tile" to="./ManageUser"><h3>Users</h3><p>Review accounts and change coach or admin roles.</p></Link>
+                </div>
 
             </div>
         </div>

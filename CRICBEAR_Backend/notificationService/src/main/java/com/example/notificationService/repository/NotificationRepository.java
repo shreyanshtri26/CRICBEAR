@@ -13,6 +13,6 @@ import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
     //Select a date with current time.
-    @Query("SELECT n FROM Notification n WHERE FUNCTION('DATE', n.sentAt) = CURRENT_DATE AND FUNCTION('TIME_FORMAT', n.sentAt, '%H:%i') = FUNCTION('TIME_FORMAT', CURRENT_TIMESTAMP, '%H:%i')")
+    @Query("SELECT n FROM Notification n WHERE FUNCTION('DATE', n.sentAt) = CURRENT_DATE AND FUNCTION('to_char', n.sentAt, 'HH24:MI') = FUNCTION('to_char', CURRENT_TIMESTAMP, 'HH24:MI')")
     List<Notification> findWithCurrentDate();
 }

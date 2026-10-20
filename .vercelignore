@@ -1,6 +1,5 @@
 .env
 *.log
 CRICBEAR_Backend/DB_SETUP/seed.py
-CRICBEAR_Frontend/docs
 CRICBEAR_Frontend/*/node_modules
 CRICBEAR_Backend/*/target

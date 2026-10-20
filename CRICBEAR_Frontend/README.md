@@ -9,35 +9,6 @@ Two React 18 apps (Create React App). Back to the [root README](../README.md) ·
 
 `build.sh` builds both into one static site (`dist/`): the public app at the root and the admin app under `/admin` (it is built with `PUBLIC_URL=/admin`, and its router uses that as the basename).
 
-## Screenshots
-
-![Home](docs/screenshots/home.jpg)
-*Home: next or live match, points table, latest results, upcoming fixtures.*
-
-![Match centre](docs/screenshots/match-centre.jpg)
-*Match centre: scoreboard, result line and scorecards. It refreshes every 3 seconds while a match is live.*
-
-![Matches](docs/screenshots/matches.jpg)
-*Matches: status filter and search.*
-
-![Standings](docs/screenshots/standings.jpg)
-*Standings: per-group tables with qualifying places marked.*
-
-![Teams](docs/screenshots/teams.jpg)
-*Teams: franchise cards and the selected squad.*
-
-![Players](docs/screenshots/players.jpg)
-*Players: leaderboard with role filters.*
-
-![Mobile](docs/screenshots/mobile.jpg)
-*Mobile layout with the bottom tab bar.*
-
-![Admin sign-in](docs/screenshots/admin-login.jpg)
-*Admin and coach sign-in.*
-
-![Admin dashboard](docs/screenshots/admin-dashboard.jpg)
-*Admin dashboard shortcuts.*
-
 ## Design system
 
 - **Palette:** ink `#14171e` for chrome, brand orange `#ff6f00` for actions and active states, paper `#f3f4f6` for the page, white cards with `#e3e5ea` borders, green for results and red for live.
@@ -84,5 +55,4 @@ dashboardforadmincoach/src/
   components/     Login, AdminDashboard, ManageMatch, ManageTeam, ...
   styles.css      original styles      theme.css  brand layer
 brand/            logo sources and generated icons
-docs/screenshots/ images used in the READMEs
 ```

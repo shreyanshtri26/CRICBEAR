@@ -12,35 +12,6 @@ Open-source cricket tournament management. Admins create tournaments and generat
 | Backend (Spring Boot services, data model, API) | [CRICBEAR_Backend/README.md](CRICBEAR_Backend/README.md) |
 | Notes for AI coding agents | [SKILL.md](SKILL.md) |
 
-## Screenshots
-
-![Home page with the next match, points table, latest results and fixtures](CRICBEAR_Frontend/docs/screenshots/home.jpg)
-*Home: the next or live match, the points table, latest results and upcoming fixtures.*
-
-![Match centre with the scoreboard and full batting and bowling scorecards](CRICBEAR_Frontend/docs/screenshots/match-centre.jpg)
-*Match centre: scoreboard, result line, and batting and bowling scorecards for each innings.*
-
-![Matches page filtered to upcoming fixtures, with search](CRICBEAR_Frontend/docs/screenshots/matches.jpg)
-*Matches: live, upcoming and finished matches with search by team or stadium.*
-
-![Group A and Group B standings tables with qualifying places marked](CRICBEAR_Frontend/docs/screenshots/standings.jpg)
-*Standings: one table per group; the top two teams in each group are marked as qualifying.*
-
-![Team cards and the selected team's squad](CRICBEAR_Frontend/docs/screenshots/teams.jpg)
-*Teams: pick a franchise to see its squad, roles and overseas players.*
-
-![Player leaderboard with role filters](CRICBEAR_Frontend/docs/screenshots/players.jpg)
-*Players: leaderboard by runs or wickets, filterable by role.*
-
-![Home, matches and match centre on a phone with a bottom tab bar](CRICBEAR_Frontend/docs/screenshots/mobile.jpg)
-*Mobile: every page is responsive; navigation moves to a bottom tab bar on phones.*
-
-![Admin and coach sign-in card](CRICBEAR_Frontend/docs/screenshots/admin-login.jpg)
-*Admin and coach sign-in.*
-
-![Admin dashboard with shortcuts to tournaments, matches and users](CRICBEAR_Frontend/docs/screenshots/admin-dashboard.jpg)
-*Admin dashboard: shortcuts to tournaments, matches and user roles.*
-
 ## Architecture
 
 ```mermaid
@@ -72,7 +43,7 @@ flowchart LR
 ```
 CRICBEAR/
 ├── CRICBEAR_Backend/    Spring Boot services + DB_SETUP/schema.sql
-├── CRICBEAR_Frontend/   dashboardforpublicuser, dashboardforadmincoach, brand assets, docs/screenshots
+├── CRICBEAR_Frontend/   dashboardforpublicuser, dashboardforadmincoach, brand assets
 ├── SKILL.md             guide for AI coding agents
 └── LICENSE              Apache-2.0
 ```
